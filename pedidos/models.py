@@ -15,6 +15,9 @@ class Pedido(models.Model):
     cliente = models.CharField(max_length=100)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     cantidad = models.PositiveIntegerField()
+    # Fecha de creación del pedido para reportes y filtros temporales
+    # Usamos default=timezone.now para que la migración pueda rellenar filas existentes
+    fecha_pedido = models.DateTimeField(default=timezone.now)
     estado = models.CharField(
         max_length=20,
         choices=[('pendiente', 'Pendiente'), ('despachado', 'Despachado')],

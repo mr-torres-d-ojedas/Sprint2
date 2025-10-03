@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
+from datetime import timedelta
 from django.contrib import messages
 from django.db import transaction
 from django.views.decorators.http import require_POST
@@ -93,7 +94,7 @@ def reporte_productos(request):
     """Vista para generar un reporte de los productos más vendidos en los últimos 3 meses."""
     inicio = time.time()
 
-    hace_tres_meses = timezone.now() - timezone.timedelta(days=90)
+    hace_tres_meses = timezone.now() - timedelta(days=90)
     productos = (Pedido.objects
                  .filter(fecha_pedido__gte=hace_tres_meses)  # Cambiado a fecha_pedido
                  .values("producto__nombre")
