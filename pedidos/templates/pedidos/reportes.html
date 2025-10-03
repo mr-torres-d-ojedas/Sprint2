@@ -1,0 +1,7 @@
+<h1>Reporte de productos más pedidos</h1>
+<ul>
+  {% for item in pedidos %}
+    <li>{{ item.producto }} - {{ item.total }} pedidos</li>
+  {% endfor %}
+</ul>
+
