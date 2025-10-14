@@ -12,10 +12,8 @@
 #    - cbd-traffic-ssh (puerto 22)
 #
 # 2. Instancias EC2:
-#    - cbd-kong
-#    - cbd-db (PostgreSQL instalado y configurado)
-#    - cbd-monitoring (Monitoring app instalada y migraciones aplicadas)
-#    - cbd-alarms-a (Monitoring app instalada)
-#    - cbd-alarms-b (Monitoring app instalada)
-#    - cbd-alarms-c (Monitoring app instalada)
+#    - cbd-Provesi-kong
+#    - cbd-Provesi-db (PostgreSQL instalado y configurado)
+#    - cbd-Provesi-django (Django app instalada y configurada)
+#
 # ******************************************************************
