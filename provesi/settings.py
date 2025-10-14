@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # app OJO
     #'pedidos.apps.PedidosConfig',
     'pedidos',
+    'despachos',
 ]
 
 MIDDLEWARE = [

@@ -21,8 +21,9 @@ from provesi import views
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('health-check/', views.healthCheck),
-    path('pedidos/', include('pedidos.urls')),
-    path('', views.index),
+        path("admin/", admin.site.urls),
+        path("", views.index, name="index"),
+        path("pedidos/", include("pedidos.urls")),
+        path("despachos/", include("despachos.urls")),
+        path("health-check/", views.health_check, name="health_check"),
 ]
