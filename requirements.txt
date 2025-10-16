@@ -1,4 +1,24 @@
-asgiref==3.9.2
+# Framework base
 Django==4.2.25
-sqlparse==0.5.3
-typing_extensions==4.15.0
+
+# Base de datos PostgreSQL
+psycopg2-binary==2.9.9
+
+# Permitir acceso desde cualquier origen (CORS)
+django-cors-headers==4.4.0
+
+# Cliente HTTP (útil si Django consume otros microservicios)
+requests==2.32.3
+
+# Variables de entorno (.env support, opcional)
+python-dotenv==1.0.1
+
+# Para manejar archivos estáticos en despliegue
+whitenoise==6.7.0
+
+# (Opcional, si usas DRF o planeas exponer APIs)
+djangorestframework==3.15.2
+
+# (Opcional) Si llegas a usar pytest o pruebas unitarias
+pytest==8.3.2
+pytest-django==4.9.0
