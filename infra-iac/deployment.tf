@@ -75,11 +75,11 @@ resource "aws_security_group" "traffic_dispatch" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = merge(local.common_tags, {
-    Name = "${var.project_prefix}-traffic-dispatch"
-  })
-}
-
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
 resource "aws_security_group" "traffic_kong" {
   name        = "${var.project_prefix}-traffic-kong"
   description = "Expose Kong circuit breaker ports"
