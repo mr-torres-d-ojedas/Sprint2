@@ -14,8 +14,9 @@ def index(request):
     return render(request, "pedidos/index.html")
 
 def lista_pedidos(request):
-    pedidos = Pedido.objects.all()
+    pedidos = Pedido.objects.prefetch_related('productos').all()
     return render(request, "pedidos/lista.html", {"pedidos": pedidos})
+
 
 @csrf_exempt  # Solo para testing, considera agregar CSRF en producción
 @require_POST
