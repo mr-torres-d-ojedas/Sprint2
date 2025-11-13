@@ -16,14 +16,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
+from django.views.generic import TemplateView
 from provesi import views
 
 
 urlpatterns = [
-        path("admin/", admin.site.urls),
-        path("", views.index, name="index"),
-        path("pedidos/", include("pedidos.urls")),
-        path("despachos/", include("despachos.urls")),
-        path("health-check/", views.health_check, name="health_check"),
+    path('admin/', admin.site.urls),
+    path('pedidos/', include('pedidos.urls')),
+    path('', include('django.contrib.auth.urls')),
+    path('', include('social_django.urls', namespace='social')),
+    path('', TemplateView.as_view(template_name="provesi/principal.html"), name="index"),
+    path("health-check/", views.health_check, name="health_check"),
 ]

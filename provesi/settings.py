@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     #'pedidos.apps.PedidosConfig',
     'pedidos',
     'despachos',
+    'provesi',
     'social_django',
 ]
 
@@ -59,7 +60,7 @@ ROOT_URLCONF = 'provesi.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -67,6 +68,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # social_django (requerido)
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -86,8 +90,11 @@ DATABASES = {
         'NAME': 'dispatch_db',
         'USER': 'dispatch_user',
         'PASSWORD': 'despacho2025',
-        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
-        'PORT': '',
+        'HOST': '54.88.95.224',  # Reemplaza con la IP publica del servidor de base de datos
+        'PORT': '5432',
+        #'HOST': os.getenv('DATABASE_HOST', 'localhost'), # Ejemplo de uso de variable de entorno
+        #'PORT': '',
+
     }
 }
 
@@ -126,7 +133,7 @@ USE_TZ = True
 # Auth0 settings
 LOGIN_URL = "/login/auth0"
 LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "https://dev-4noubspfzqibyz5d.us.auth0.com/v2/logout?returnTo=http%3A%2F%2Fip_publica_instancia:8080"
+LOGOUT_REDIRECT_URL = "https://dev-4noubspfzqibyz5d.us.auth0.com/v2/logout?returnTo=http%3A%2F%2F0.0.0.0:8080"
 
 SOCIAL_AUTH_TRAILING_SLASH = False  # Remove end slash from routes
 SOCIAL_AUTH_AUTH0_DOMAIN = 'dev-4noubspfzqibyz5d.us.auth0.com'
@@ -140,10 +147,10 @@ SOCIAL_AUTH_AUTH0_SCOPE = [
     'role',
 ]
 
-AUTHENTICATION_BACKENDS = {
+AUTHENTICATION_BACKENDS = (
     'provesi.auth0backend.Auth0',
     'django.contrib.auth.backends.ModelBackend',
-}
+)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/

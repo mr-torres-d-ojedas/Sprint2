@@ -9,13 +9,15 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum
 from .models import Pedido, Producto
 from django.contrib.auth.decorators import login_required
-
+from provesi.decorators import role_required
 
 import time
 
 def index(request):
     return render(request, "pedidos/index.html")
 
+@login_required
+@role_required(["TrabajadorBodega", "Gerente"])
 def lista_pedidos(request):
     pedidos = Pedido.objects.prefetch_related('productos').all()
     return render(request, "pedidos/lista.html", {"pedidos": pedidos})
@@ -23,6 +25,8 @@ def lista_pedidos(request):
 
 @csrf_exempt  # Solo para testing, considera agregar CSRF en producción
 @require_POST
+@login_required
+@role_required(["TrabajadorBodega"])
 def despachar_pedido(request, pedido_id):
     """Vista para despachar un pedido específico."""
     try:
@@ -70,6 +74,8 @@ def despachar_pedido(request, pedido_id):
             'message': f'Error al despachar pedido: {str(e)}'
         }, status=500)
 
+@login_required
+@role_required(["TrabajadorBodega"])
 def actualizar_estado(request, pedido_id):
     """Vista para actualizar el estado de un pedido."""
     pedido = get_object_or_404(Pedido, id=pedido_id)
@@ -94,6 +100,8 @@ def actualizar_estado(request, pedido_id):
 
     return JsonResponse({"id": pedido.id, "estado": pedido.estado})
 
+@login_required
+@role_required(["Gerente"])
 def reporte_productos(request):
     """Vista para generar un reporte de los productos más vendidos en los últimos 3 meses."""
     inicio = time.time()
@@ -112,7 +120,8 @@ def reporte_productos(request):
         "productos": productos,
         "latencia": f"{latencia:.2f} segundos"
     })
-
+@login_required
+@role_required(["TrabajadorBodega"])
 def despachar_multiple(request):
     """Vista para despachar múltiples pedidos."""
     if request.method == 'POST':

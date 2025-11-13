@@ -17,14 +17,33 @@
 </head>
 
 <body class="bg-light">
-
 <div class="container-fluid py-4">
+
+        <!-- Área de mensajes -->
+    {% if messages %}
+    <div class="row">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'warning' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
     <div class="row mb-4">
         <div class="col-12 d-flex justify-content-between align-items-center">
             <div>
                 <h1 class="h3 mb-0">🏭 <strong>Provesi Colombia</strong></h1>
                 <p class="text-muted mb-0">Gestión de Pedidos - EPP y Seguridad Industrial</p>
+            </div>
+            <!-- Botón de logout -->
+            <div>
+                <a href="{% url 'logout' %}" class="btn btn-outline-danger">
+                    Cerrar sesión
+                </a>
             </div>
         </div>
     </div>
@@ -98,18 +117,35 @@
 
 <script>
 function despacharPedido(pedidoId) {
+    const btn = document.getElementById(`btn-${pedidoId}`);
+    if (btn) btn.classList.add('loading');
+
     fetch(`/pedidos/${pedidoId}/despachar/`, {
         method: 'POST',
-        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
     })
-    .then(r => r.json())
-    .then(data => location.reload());
+    .then(async r => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok || data.success === false) {
+            alert(data.message || 'No tiene permisos para realizar esa acción.');
+            if (btn) btn.classList.remove('loading');
+            return;
+        }
+        location.reload();
+    })
+    .catch(() => {
+        alert('Ocurrió un error procesando la solicitud.');
+        if (btn) btn.classList.remove('loading');
+    });
 }
 
 function getCookie(name) {
     return document.cookie.split('; ').find(c => c.startsWith(name + '='))?.split('=')[1];
 }
 </script>
-
 </body>
 </html>
