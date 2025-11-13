@@ -49,7 +49,7 @@ class TipoPedido(models.TextChoices):
 
 class Producto(models.Model):
     SKU = models.CharField(max_length=100, null=True, blank=True)
-    descripcion = models.CharField(max_length=250)
+    descripcion = models.CharField(max_length=250,null=True, blank=True)
     referencia = models.CharField(max_length=150, blank=True, null=True)
     peso = models.FloatField(default=0.0)
     categoria = models.CharField(

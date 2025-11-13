@@ -22,3 +22,5 @@ djangorestframework==3.15.2
 # (Opcional) Si llegas a usar pytest o pruebas unitarias
 pytest==8.3.2
 pytest-django==4.9.0
+
+social-auth-app-django==5.4.1
