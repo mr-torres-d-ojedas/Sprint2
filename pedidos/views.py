@@ -23,56 +23,69 @@ def lista_pedidos(request):
     return render(request, "pedidos/lista.html", {"pedidos": pedidos})
 
 
-@csrf_exempt  # Solo para testing, considera agregar CSRF en producción
+@csrf_exempt
 @require_POST
 @login_required
 @role_required(["TrabajadorBodega"])
 def despachar_pedido(request, pedido_id):
-    """Vista para despachar un pedido específico."""
+    """Despacha un pedido validando versión (concurrencia) y estado."""
+    if is_blocked(request):
+        return JsonResponse({"success": False, "message": "Acceso revocado temporalmente."}, status=403)
+
+    # La versión llega por header o por body
+    client_version = request.headers.get('X-Pedido-Version') or request.POST.get('version')
+    try:
+        client_version = int(client_version) if client_version is not None else None
+    except ValueError:
+        client_version = None
+
     try:
         with transaction.atomic():
-            # Obtener pedido con select_for_update para evitar race conditions
-            pedido = get_object_or_404(
-                Pedido.objects.select_for_update().select_related('producto'), 
-                id=pedido_id
-            )
-            
-            # Verificar si ya está despachado
-            if pedido.estado == 'despachado':
-                return JsonResponse({
-                    'success': False, 
-                    'message': 'El pedido ya está despachado'
-                }, status=400)
-            
-            # Verificar stock disponible
-            producto = pedido.producto
-            if producto.stock < pedido.cantidad:
+            pedido = get_object_or_404(Pedido.objects.select_for_update(), id=pedido_id)
+
+            # Concurrencia: si el cliente trae versión y no coincide, detectar y bloquear
+            if client_version is not None and pedido.version != client_version:
+                block_and_log(
+                    request,
+                    event="CONCURRENCY_CONFLICT",
+                    pedido_id=pedido.id,
+                    reason=f"version_mismatch server={pedido.version} client={client_version}"
+                )
                 return JsonResponse({
                     'success': False,
-                    'message': f'Stock insuficiente. Disponible: {producto.stock}, Solicitado: {pedido.cantidad}'
-                }, status=400)
-            
-            # Actualizar stock y estado del pedido
-            producto.stock -= pedido.cantidad
-            pedido.estado = 'despachado'
-            
-            # Guardar cambios
-            producto.save(update_fields=['stock'])
-            pedido.save(update_fields=['estado'])
-            
-            # Respuesta exitosa
+                    'message': 'El pedido fue modificado por otro proceso. Intente recargar la página.'
+                }, status=409)
+
+            # Si ya está despachado, salida amable
+            if pedido.estadoActual == EstadosPedido.DESPACHADO:
+                return JsonResponse({'success': False, 'message': 'El pedido ya está despachado'}, status=400)
+
+            # Transición de estado (ajusta si requieres validar un flujo específico)
+            anterior = pedido.estadoActual
+            pedido.estadoActual = EstadosPedido.DESPACHADO
+
+            # Historial
+            hist = list(pedido.historialEstados or [])
+            hist.append({
+                "from": anterior,
+                "to": pedido.estadoActual,
+                "at": timezone.now().isoformat()
+            })
+            pedido.historialEstados = hist
+
+            # Incrementar versión y guardar
+            pedido.version = (pedido.version or 0) + 1
+            pedido.save(update_fields=['estadoActual', 'historialEstados', 'version', 'updated_at'])
+
             return JsonResponse({
                 'success': True,
-                'message': f'Pedido #{pedido.id} despachado exitosamente',
-                'nuevo_stock': producto.stock,
-                'estado': pedido.estado
+                'message': f'Pedido #{pedido.id} despachado',
+                'estado': pedido.estadoActual,
+                'version': pedido.version
             })
-            
     except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': f'Error al despachar pedido: {str(e)}'
-        }, status=500)
+        block_and_log(request, event="DISPATCH_ERROR", pedido_id=pedido_id, reason=str(e))
+        return JsonResponse({'success': False, 'message': f'Error al despachar: {str(e)}'}, status=500)
 
 @login_required
 @role_required(["TrabajadorBodega"])

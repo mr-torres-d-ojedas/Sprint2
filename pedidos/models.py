@@ -77,5 +77,8 @@ class Pedido(models.Model):
     observaciones = models.TextField(blank=True, null=True)
     fechaEntrega = models.DateTimeField(null=True, blank=True)
 
+    updated_at = models.DateTimeField(auto_now=True)  # Marca tiempo de última actualización
+    version = models.PositiveIntegerField(default=0)  # Versión para control de concurrencia
+
     def __str__(self):
         return f"Pedido #{self.id} - {self.estadoActual}"

@@ -90,10 +90,10 @@ DATABASES = {
         'NAME': 'dispatch_db',
         'USER': 'dispatch_user',
         'PASSWORD': 'despacho2025',
-        'HOST': '54.88.95.224',  # Reemplaza con la IP publica del servidor de base de datos
-        'PORT': '5432',
-        #'HOST': os.getenv('DATABASE_HOST', 'localhost'), # Ejemplo de uso de variable de entorno
-        #'PORT': '',
+        #'HOST': '54.88.95.224',  # Reemplaza con la IP publica del servidor de base de datos
+        #'PORT': '5432',
+        'HOST': os.getenv('DATABASE_HOST', 'localhost'), # Ejemplo de uso de variable de entorno
+        'PORT': '',
 
     }
 }
@@ -134,6 +134,21 @@ USE_TZ = True
 LOGIN_URL = "/login/auth0"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "https://dev-4noubspfzqibyz5d.us.auth0.com/v2/logout?returnTo=http%3A%2F%2F0.0.0.0:8080"
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'}
+    },
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'simple'},
+    },
+    'loggers': {
+        'security': {'handlers': ['console'], 'level': 'INFO', 'propagate': False},
+    },
+}
 
 SOCIAL_AUTH_TRAILING_SLASH = False  # Remove end slash from routes
 SOCIAL_AUTH_AUTH0_DOMAIN = 'dev-4noubspfzqibyz5d.us.auth0.com'
