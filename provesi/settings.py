@@ -90,10 +90,10 @@ DATABASES = {
         'NAME': 'dispatch_db',
         'USER': 'dispatch_user',
         'PASSWORD': 'despacho2025',
-        #'HOST': '98.81.191.234',  # Reemplaza con la IP publica del servidor de base de datos
-        #'PORT': '5432',
-        'HOST': os.getenv('DATABASE_HOST', 'localhost'), # Ejemplo de uso de variable de entorno
-        'PORT': '',
+        'HOST': '3.88.87.176',  # Reemplaza con la IP publica del servidor de base de datos
+        'PORT': '5432',
+        #'HOST': os.getenv('DATABASE_HOST', 'localhost'), # Ejemplo de uso de variable de entorno
+        #'PORT': '',
 
     }
 }

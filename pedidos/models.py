@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+import hashlib
+import json
 
 # ---------- ENUMERACIONES ---------- #
 
@@ -80,5 +82,35 @@ class Pedido(models.Model):
     updated_at = models.DateTimeField(auto_now=True)  # Marca tiempo de última actualización
     version = models.PositiveIntegerField(default=0)  # Versión para control de concurrencia
 
-    def __str__(self):
-        return f"Pedido #{self.id} - {self.estadoActual}"
+    estadoActual = models.CharField(max_length=50, null=True, blank=True)
+    valorTotal = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    fechaEntrega = models.DateTimeField(null=True, blank=True)
+
+    # ASR control
+    version = models.PositiveIntegerField(default=0)               # control de concurrencia
+    integrity_hash = models.CharField(max_length=64, blank=True)   # SHA256 de campos críticos
+    snapshot = models.TextField(blank=True)                        # JSON del último estado aprobado
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def compute_integrity(self):
+        critical = {
+            "estadoActual": self.estadoActual,
+            "valorTotal": str(self.valorTotal) if self.valorTotal is not None else None,
+            "fechaEntrega": self.fechaEntrega.isoformat() if self.fechaEntrega else None
+        }
+        raw = json.dumps(critical, sort_keys=True)
+        return hashlib.sha256(raw.encode()).hexdigest(), raw
+
+    def seal(self):
+        h, snap = self.compute_integrity()
+        self.integrity_hash = h
+        self.snapshot = snap
+
+    def save(self, *args, **kwargs):
+        # Si es creación o estado aprobado (no rollback), actualiza sello
+        if not self.pk:  # nuevo
+            super().save(*args, **kwargs)
+            self.seal()
+            super().save(update_fields=["integrity_hash", "snapshot"])
+        else:
+            super().save(*args, **kwargs)

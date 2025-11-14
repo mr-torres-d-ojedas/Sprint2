@@ -12,6 +12,8 @@ from provesi.auth0backend import getRole
 from .models import Pedido, Producto, EstadosPedido
 from django.contrib.auth.decorators import login_required
 from provesi.decorators import role_required
+import hashlib, json, time
+
 # from provesi.security import block_and_log, is_blocked
 
 import time
@@ -28,19 +30,17 @@ def lista_pedidos(request):
 @csrf_exempt
 @require_POST
 @login_required
-@role_required(["TrabajadorBodega"])  # este decorador ya permite entrar a TrabajadorBodega
+@role_required(["TrabajadorBodega"])
 def despachar_pedido(request, pedido_id):
-    """Despacha un pedido validando versión (concurrencia) y estado."""
+    start = time.time()  # medir latencia detección
 
-    # Verificación explícita y log en consola
     role = getRole(request)
     if role == "TrabajadorBodega":
         print(f"APROBADO: rol={role} puede despachar pedido {pedido_id}")
     else:
         print(f"DENEGADO: rol={role} no puede despachar pedido {pedido_id}")
-        return JsonResponse({'success': False, 'message': 'No tiene permisos para despachar pedidos'}, status=403)
+        return JsonResponse({'success': False, 'message': 'No tiene permisos'}, status=403)
 
-    # La versión llega por header o por body
     client_version = request.headers.get('X-Pedido-Version') or request.POST.get('version')
     try:
         client_version = int(client_version) if client_version is not None else None
@@ -50,15 +50,39 @@ def despachar_pedido(request, pedido_id):
     try:
         with transaction.atomic():
             pedido = get_object_or_404(Pedido.objects.select_for_update(), id=pedido_id)
-            # ...existing code...
+
+            # Verificar integridad previa
+            expected_hash, raw_snapshot = pedido.compute_integrity()
+            if pedido.integrity_hash and pedido.integrity_hash != expected_hash:
+                # Modificación externa detectada → revertir a snapshot
+                print(f"ALERTA ATAQUE: integridad violada en Pedido {pedido.id}. Revocando cambios.")
+                # Revocar: restaurar snapshot (estado aprobado previo)
+                snap = json.loads(pedido.snapshot) if pedido.snapshot else {}
+                pedido.estadoActual = snap.get("estadoActual")
+                pedido.valorTotal = snap.get("valorTotal")
+                # No avanzar estado; re-sellar
+                pedido.seal()
+                pedido.save(update_fields=["estadoActual", "valorTotal", "integrity_hash", "snapshot", "updated_at"])
+                elapsed = (time.time() - start)
+                return JsonResponse({
+                    "success": False,
+                    "revocado": True,
+                    "tiempo_revocacion_s": f"{elapsed:.3f}",
+                    "message": "Intento no autorizado detectado y revertido."
+                }, status=409)
+
+            # Concurrencia versión
             if client_version is not None and pedido.version != client_version:
+                print(f"CONFLICTO VERSION Pedido {pedido.id}: cliente={client_version} servidor={pedido.version}")
+                elapsed = (time.time() - start)
                 return JsonResponse({
                     'success': False,
-                    'message': 'El pedido fue modificado por otro proceso. Intente recargar la página.'
+                    'message': 'Conflicto de versión. Recargue.',
+                    'tiempo_revocacion_s': f"{elapsed:.3f}"
                 }, status=409)
 
             if pedido.estadoActual == EstadosPedido.DESPACHADO:
-                return JsonResponse({'success': False, 'message': 'El pedido ya está despachado'}, status=400)
+                return JsonResponse({'success': False, 'message': 'Ya despachado'}, status=400)
 
             anterior = pedido.estadoActual
             pedido.estadoActual = EstadosPedido.DESPACHADO
@@ -72,16 +96,20 @@ def despachar_pedido(request, pedido_id):
             pedido.historialEstados = hist
 
             pedido.version = (pedido.version or 0) + 1
-            pedido.save(update_fields=['estadoActual', 'historialEstados', 'version', 'updated_at'])
+            # Sellar nuevo estado
+            pedido.seal()
+            pedido.save(update_fields=['estadoActual','historialEstados','version','integrity_hash','snapshot','updated_at'])
 
+            elapsed = (time.time() - start)
             return JsonResponse({
                 'success': True,
                 'message': f'Pedido #{pedido.id} despachado',
                 'estado': pedido.estadoActual,
-                'version': pedido.version
+                'version': pedido.version,
+                'tiempo_proceso_s': f"{elapsed:.3f}"
             })
     except Exception as e:
-        return JsonResponse({'success': False, 'message': f'Error al despachar: {str(e)}'}, status=500)
+        return JsonResponse({'success': False, 'message': f'Error: {str(e)}'}, status=500)
     
 @login_required
 @role_required(["TrabajadorBodega"])
