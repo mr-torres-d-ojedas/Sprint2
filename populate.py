@@ -1,15 +1,15 @@
 import os
 import django
 import random
+from decimal import Decimal
 from django.utils import timezone
+from django.db import transaction
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "provesi.settings")
 django.setup()
 
 from pedidos.models import Producto, Pedido, EstadosPedido, TipoPedido, CategoriasProducto
 
-
-# --------- GENERACIÓN DE PRODUCTOS --------- #
 
 def generar_productos():
     productos_base = [
@@ -28,7 +28,6 @@ def generar_productos():
     ]
 
     productos_creados = []
-
     for idx, (desc, categoria) in enumerate(productos_base):
         p = Producto(
             SKU=f"PRV-{1000+idx}",
@@ -43,47 +42,58 @@ def generar_productos():
     print(f"✅ Se crearon {len(productos_creados)} productos.")
 
 
-# --------- GENERACIÓN DE PEDIDOS --------- #
-
 def generar_pedidos(n=50):
     productos = list(Producto.objects.all())
     if not productos:
-        print("❌ No hay productos. Ejecuta primero la generación de productos.")
+        print("❌ No hay productos. Ejecuta primero generar_productos().")
         return
 
-    for _ in range(n):
-        pedido = Pedido.objects.create(
-            estadoActual=random.choice([e.value for e in EstadosPedido]),
-            historialEstados=[],
-            tipoPedido=random.choice([t.value for t in TipoPedido]),
-            bodega=random.choice(["Bodega Norte", "Bodega Occidente", "Bodega Central"]),
-            observaciones=random.choice(["", "Prioridad alta", "Cliente solicitó confirmación", "Entregar urgente"]),
-        )
+    with transaction.atomic():
+        for _ in range(n):
+            productos_seleccionados = random.sample(productos, random.randint(1, 5))
 
-        productos_seleccionados = random.sample(productos, random.randint(1, 5))
-        pedido.productos.add(*productos_seleccionados)
+            # Calcular valorTotal (precio simulado = peso * factor aleatorio)
+            total = Decimal("0")
+            for prod in productos_seleccionados:
+                factor = Decimal(random.randint(5000, 15000))
+                total += Decimal(str(prod.peso)) * factor
 
-        # Valor total (sumando un precio simulado según peso para mantener coherencia)
-        pedido.valorTotal = round(sum(p.peso * random.randint(5000, 15000) for p in productos_seleccionados), 2)
+            # Fecha de entrega
+            fecha_entrega = timezone.now() + timezone.timedelta(days=random.randint(1, 30))
 
-        # Fecha entrega aleatoria dentro de los próximos 30 días
-        pedido.fechaEntrega = timezone.now() + timezone.timedelta(days=random.randint(1, 30))
+            estado = random.choice([e.value for e in EstadosPedido])
+            tipo = random.choice([t.value for t in TipoPedido])
+            bodega = random.choice(["Bodega Norte", "Bodega Occidente", "Bodega Central"])
+            obs = random.choice(["", "Prioridad alta", "Cliente solicitó confirmación", "Entregar urgente"])
 
-        # Historial del pedido simulado
-        pedido.historialEstados = [
-            {"estado": EstadosPedido.COTIZACION.value, "fecha": str(timezone.now())},
-            {"estado": pedido.estadoActual, "fecha": str(timezone.now())}
-        ]
+            historial = [
+                {"estado": EstadosPedido.COTIZACION.value, "fecha": str(timezone.now())},
+                {"estado": estado, "fecha": str(timezone.now())}
+            ]
 
-        pedido.save()
+            # Crear pedido con campos críticos ya definidos (sellado interno OK)
+            pedido = Pedido.objects.create(
+                estadoActual=estado,
+                historialEstados=historial,
+                tipoPedido=tipo,
+                bodega=bodega,
+                observaciones=obs,
+                valorTotal=total,
+                fechaEntrega=fecha_entrega,
+            )
+
+            # Añadir productos (no afecta integridad crítica)
+            pedido.productos.add(*productos_seleccionados)
+
+            # Reseal opcional por si el save inicial no tomó algún valor tardío (seguro)
+            pedido.seal()
+            pedido.save(update_fields=["integrity_hash", "snapshot"])
 
     print(f"✅ Se crearon {n} pedidos.")
 
 
-# --------- EJECUCIÓN --------- #
-
 if __name__ == "__main__":
     print("🚀 Poblando base de datos...")
     generar_productos()
-    generar_pedidos(150)   # Cambia 150 si quieres más volumen
+    generar_pedidos(150)
     print("🎉 Finalizado.")

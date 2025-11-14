@@ -1,14 +1,19 @@
-from django.core.management.base import BaseCommand
+import os
+import django
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "provesi.settings")
+django.setup()
+
 from pedidos.models import Pedido
 
-class Command(BaseCommand):
-    help = "Inicializa integrity_hash y snapshot en pedidos existentes."
+def main():
+    count = 0
+    for p in Pedido.objects.all():
+        if not p.integrity_hash:
+            p.seal()
+            p.save(update_fields=["integrity_hash", "snapshot"])
+            count += 1
+    print(f"Sellados {count} pedidos.")
 
-    def handle(self, *args, **options):
-        count = 0
-        for p in Pedido.objects.all():
-            if not p.integrity_hash:
-                p.seal()
-                p.save(update_fields=["integrity_hash", "snapshot"])
-                count += 1
-        self.stdout.write(self.style.SUCCESS(f"Sellados {count} pedidos."))
+if __name__ == "__main__":
+    main()
