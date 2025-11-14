@@ -35,10 +35,12 @@
 
     <div class="row mb-4">
         <div class="col-12 d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="h3 mb-0">🏭 <strong>Provesi Colombia</strong></h1>
-                <p class="text-muted mb-0">Gestión de Pedidos - EPP y Seguridad Industrial</p>
-            </div>
+    <div>
+        <h1 class="h3 mb-0">🏭 <strong>Provesi Colombia</strong></h1>
+        <p class="text-muted mb-0">
+            Gestión de Pedidos - Rol: {{ request.session.auth0_role|default:"(sin rol)" }}
+        </p>
+    </div>
             <!-- Botón de logout -->
             <div>
                 <a href="{% url 'logout' %}" class="btn btn-outline-danger">
@@ -124,15 +126,15 @@ function despacharPedido(pedidoId) {
 
     if (btn) btn.classList.add('loading');
 
-    fetch(`/pedidos/${pedidoId}/despachar/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json',
-            'X-Pedido-Version': version
-        }
-    })
+        fetch(`/pedidos/despachar/${pedidoId}/`, {   // <-- antes: /pedidos/${pedidoId}/despachar/
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-Pedido-Version': version
+            }
+        })
     .then(async r => {
         const data = await r.json().catch(() => ({}));
         if (!r.ok || data.success === false) {

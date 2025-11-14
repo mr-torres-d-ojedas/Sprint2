@@ -1,6 +1,12 @@
 import requests
 from social_core.backends.oauth import BaseOAuth2
 from django.conf import settings
+import logging
+from time import time
+
+import requests
+from social_core.backends.oauth import BaseOAuth2
+from django.conf import settings
 
 class Auth0(BaseOAuth2):
     """Auth0 OAuth authentication backend"""
@@ -35,7 +41,6 @@ class Auth0(BaseOAuth2):
                 'user_id': userinfo['sub']}
 
 
-
 # Esta función está POR FUERA de la clase Auth0. Es una función independiente.
 def getRole(request):
     user = request.user
@@ -47,3 +52,4 @@ def getRole(request):
     userinfo = resp.json()
     role = userinfo[f"{settings.SOCIAL_AUTH_AUTH0_DOMAIN}/role"]
     return (role)
+

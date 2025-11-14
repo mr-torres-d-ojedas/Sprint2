@@ -7,9 +7,12 @@ from django.db import transaction
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum
-from .models import Pedido, Producto
+
+from provesi.auth0backend import getRole
+from .models import Pedido, Producto, EstadosPedido
 from django.contrib.auth.decorators import login_required
 from provesi.decorators import role_required
+# from provesi.security import block_and_log, is_blocked
 
 import time
 
@@ -22,15 +25,20 @@ def lista_pedidos(request):
     pedidos = Pedido.objects.prefetch_related('productos').all()
     return render(request, "pedidos/lista.html", {"pedidos": pedidos})
 
-
 @csrf_exempt
 @require_POST
 @login_required
-@role_required(["TrabajadorBodega"])
+@role_required(["TrabajadorBodega"])  # este decorador ya permite entrar a TrabajadorBodega
 def despachar_pedido(request, pedido_id):
     """Despacha un pedido validando versión (concurrencia) y estado."""
-    if is_blocked(request):
-        return JsonResponse({"success": False, "message": "Acceso revocado temporalmente."}, status=403)
+
+    # Verificación explícita y log en consola
+    role = getRole(request)
+    if role == "TrabajadorBodega":
+        print(f"APROBADO: rol={role} puede despachar pedido {pedido_id}")
+    else:
+        print(f"DENEGADO: rol={role} no puede despachar pedido {pedido_id}")
+        return JsonResponse({'success': False, 'message': 'No tiene permisos para despachar pedidos'}, status=403)
 
     # La versión llega por header o por body
     client_version = request.headers.get('X-Pedido-Version') or request.POST.get('version')
@@ -42,29 +50,19 @@ def despachar_pedido(request, pedido_id):
     try:
         with transaction.atomic():
             pedido = get_object_or_404(Pedido.objects.select_for_update(), id=pedido_id)
-
-            # Concurrencia: si el cliente trae versión y no coincide, detectar y bloquear
+            # ...existing code...
             if client_version is not None and pedido.version != client_version:
-                block_and_log(
-                    request,
-                    event="CONCURRENCY_CONFLICT",
-                    pedido_id=pedido.id,
-                    reason=f"version_mismatch server={pedido.version} client={client_version}"
-                )
                 return JsonResponse({
                     'success': False,
                     'message': 'El pedido fue modificado por otro proceso. Intente recargar la página.'
                 }, status=409)
 
-            # Si ya está despachado, salida amable
             if pedido.estadoActual == EstadosPedido.DESPACHADO:
                 return JsonResponse({'success': False, 'message': 'El pedido ya está despachado'}, status=400)
 
-            # Transición de estado (ajusta si requieres validar un flujo específico)
             anterior = pedido.estadoActual
             pedido.estadoActual = EstadosPedido.DESPACHADO
 
-            # Historial
             hist = list(pedido.historialEstados or [])
             hist.append({
                 "from": anterior,
@@ -73,7 +71,6 @@ def despachar_pedido(request, pedido_id):
             })
             pedido.historialEstados = hist
 
-            # Incrementar versión y guardar
             pedido.version = (pedido.version or 0) + 1
             pedido.save(update_fields=['estadoActual', 'historialEstados', 'version', 'updated_at'])
 
@@ -84,9 +81,8 @@ def despachar_pedido(request, pedido_id):
                 'version': pedido.version
             })
     except Exception as e:
-        block_and_log(request, event="DISPATCH_ERROR", pedido_id=pedido_id, reason=str(e))
         return JsonResponse({'success': False, 'message': f'Error al despachar: {str(e)}'}, status=500)
-
+    
 @login_required
 @role_required(["TrabajadorBodega"])
 def actualizar_estado(request, pedido_id):
@@ -121,7 +117,7 @@ def reporte_productos(request):
 
     hace_tres_meses = timezone.now() - timedelta(days=90)
     productos = (Pedido.objects
-                 .filter(fecha_pedido__gte=hace_tres_meses)  # Cambiado a fecha_pedido
+                 .filter(fecha_pedido__gte=hace_tres_meses)
                  .values("producto__nombre")
                  .annotate(total_vendido=Sum("cantidad"))
                  .order_by("-total_vendido")[:10])
@@ -133,6 +129,7 @@ def reporte_productos(request):
         "productos": productos,
         "latencia": f"{latencia:.2f} segundos"
     })
+
 @login_required
 @role_required(["TrabajadorBodega"])
 def despachar_multiple(request):
