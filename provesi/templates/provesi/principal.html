@@ -2,17 +2,199 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Principal</title>
+  <title>Provesi - Inicio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 2rem; }
-    .btn { display:inline-block; padding:0.75rem 1.25rem; background:#2563eb; color:#fff; text-decoration:none; border-radius:8px; }
-    .btn:hover { background:#1d4ed8; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --color-dark-blue: #1e3a8a;
+      --color-blue: #2563eb;
+      --color-black: #0f172a;
+      --color-gray-dark: #334155;
+      --color-gray: #64748b;
+      --color-gray-light: #cbd5e1;
+      --color-gray-bg: #f1f5f9;
+      --color-white: #ffffff;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--color-gray-bg) 0%, var(--color-white) 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-black);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 560px;
+      padding: 32px;
+    }
+
+    .card {
+      background: var(--color-white);
+      border-radius: 16px;
+      padding: 48px;
+      box-shadow: var(--shadow-xl);
+      text-align: center;
+      border: 1px solid var(--color-gray-light);
+    }
+
+    .logo {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, var(--color-dark-blue) 0%, var(--color-blue) 100%);
+      border-radius: 16px;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: var(--color-white);
+      font-weight: 700;
+      box-shadow: var(--shadow-lg);
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--color-black);
+      margin-bottom: 8px;
+      letter-spacing: -0.025em;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: var(--color-gray);
+      margin-bottom: 32px;
+      font-weight: 400;
+    }
+
+    .welcome-text {
+      font-size: 15px;
+      color: var(--color-gray-dark);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .btn {
+      display: inline-block;
+      width: 100%;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, var(--color-dark-blue) 0%, var(--color-blue) 100%);
+      color: var(--color-white);
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow-md);
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.025em;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+      background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-icon {
+      margin-right: 8px;
+      font-size: 18px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--color-gray-light);
+      margin: 32px 0;
+    }
+
+    .footer-text {
+      font-size: 13px;
+      color: var(--color-gray);
+      margin-top: 24px;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 16px;
+      }
+      
+      .card {
+        padding: 32px 24px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .subtitle {
+        font-size: 14px;
+      }
+    }
+
+    /* Animación de entrada */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card {
+      animation: fadeInUp 0.6s ease-out;
+    }
   </style>
 </head>
 <body>
-  <h1>Bienvenido</h1>
-  <p>Pulsa el botón para ir a la gestión de pedidos.</p>
-  <a class="btn" href="{% url 'lista_pedidos' %}">Ir a Pedidos</a>
+  <div class="container">
+    <div class="card">
+      <div class="logo">P</div>
+      <h1>Provesi Colombia</h1>
+      <p class="subtitle">Sistema de Gestión de Pedidos</p>
+      
+      <div class="divider"></div>
+      
+      <p class="welcome-text">
+        Bienvenido al sistema de gestión. Accede al módulo de pedidos para visualizar, 
+        despachar y administrar todos los pedidos de la plataforma.
+      </p>
+      
+      <a class="btn" href="{% url 'lista_pedidos' %}">
+        <span class="btn-icon">→</span>
+        Ir a Gestión de Pedidos
+      </a>
+      
+      <p class="footer-text">
+        Versión 2.0 • Sistema seguro y confiable
+      </p>
+    </div>
+  </div>
 </body>
 </html>
