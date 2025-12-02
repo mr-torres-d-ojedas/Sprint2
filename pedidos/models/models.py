@@ -11,24 +11,6 @@ import json
 
 # ---------- ENUMERACIONES ---------- #
 
-class CategoriasProducto(str, Enum):
-    PROTECCION_MANUAL = "PROTECCIÓN MANUAL"
-    PROTECCION_AUDITIVA = "PROTECCIÓN AUDITIVA"
-    PROTECCION_VISUAL = "PROTECCIÓN VISUAL"
-    PROTECCION_RESPIRATORIA = "PROTECCIÓN RESPIRATORIA"
-    PROTECCION_FACIAL_Y_CABEZA = "PROTECCIÓN FACIAL Y CABEZA"
-    PROTECCION_CORPORAL = "PROTECCIÓN CORPORAL"
-    SENALIZACION = "SEÑALIZACIÓN"
-    PROTECCION_ALTURAS = "PROTECCIÓN ALTURAS"
-    PROTECCION_PIES = "PROTECCIÓN PIES"
-    PRIMEROS_AUXILIOS = "ATENCIÓN PRIMEROS AUXILIOS"
-    ESPACIOS_CONFINADOS = "PROTECCIÓN ESPACIOS CONFINADOS"
-    ATENCION_DERRAMES = "MATERIAL ATENCIÓN DERRAMES"
-    HERRAMIENTAS_EQUIPOS = "HERRAMIENTAS Y EQUIPOS"
-    OTROS = "OTROS"
-    TECNOLOGIA = "TECNOLOGÍA"
-
-
 class EstadosPedido(str, Enum):
     TRANSITO = "TRÁNSITO"
     ALISTAMIENTO = "ALISTAMIENTO"
@@ -55,26 +37,6 @@ class TipoPedido(str, Enum):
 
 # ---------- MODELOS ---------- #
 
-class Producto(BaseModel):
-    SKU: Optional[str] = Field(None)
-    descripcion: Optional[str] = Field(None)
-    referencia: Optional[str] = Field(None)
-    peso: float = Field(default=0.0)
-    categoria: CategoriasProducto = Field(default=CategoriasProducto.OTROS)
-    
-    model_config = ConfigDict(
-        populate_by_name=True,
-        arbitrary_types_allowed=True,
-        json_schema_extra={
-            "example": {
-                "SKU": "EPP-001",
-                "descripcion": "Guantes de nitrilo",
-                "referencia": "GN-2024",
-                "peso": 0.15,
-                "categoria": CategoriasProducto.PROTECCION_MANUAL,
-            }
-        },
-    )
 
 
 class Pedido(BaseModel):
@@ -156,24 +118,3 @@ class PedidoCollection(BaseModel):
     # A collection of pedidos
     pedidos: List[PedidoOut] = Field(...)
 
-
-class ProductoOut(Producto):
-    id: PyObjectId = Field(alias="_id", default=None, serialization_alias="id")
-    model_config = ConfigDict(
-        from_attributes=True,
-        json_schema_extra={
-            "example": {
-                "id": "64b9f1f4f1d2b2a3c4e5f6a8",
-                "SKU": "EPP-001",
-                "descripcion": "Guantes de nitrilo",
-                "referencia": "GN-2024",
-                "peso": 0.15,
-                "categoria": CategoriasProducto.PROTECCION_MANUAL,
-            }
-        },
-    )
-
-
-class ProductoCollection(BaseModel):
-    # A collection of productos
-    productos: List[ProductoOut] = Field(...)
