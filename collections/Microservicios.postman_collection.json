@@ -1,0 +1,443 @@
+{
+	"info": {
+		"_postman_id": "1b92d085-1dc2-4d1e-80ff-0b9726517a52",
+		"name": "Microservicio Pedidos",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23312038"
+	},
+	"item": [
+		{
+			"name": "Kong",
+			"item": [
+				{
+					"name": "Registrar servicio Pedidos",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\":\"pedidos\",\r\n    \"url\": \"http://{{PEDIDOS_MS_IP}}:8080\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{KONG_ADMIN_IP}}:8001/services",
+							"protocol": "http",
+							"host": [
+								"{{KONG_ADMIN_IP}}"
+							],
+							"port": "8001",
+							"path": [
+								"services"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Registrar ruta Pedidos",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"hosts\": [\"{{KONG_ADMIN_IP}}\", \"0.0.0.0\"],\r\n    \"paths\": [\"/pedidos\"],\r\n    \"strip_path\": false,\r\n    \"methods\": [\r\n        \"GET\",\r\n        \"POST\",\r\n        \"PUT\",\r\n        \"DELETE\"\r\n    ],\r\n    \"service\": {\r\n        \"id\": \"{{SERVICE_ID}}\"\r\n    },\r\n    \"preserve_host\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{KONG_ADMIN_IP}}:8001/routes/",
+							"protocol": "http",
+							"host": [
+								"{{KONG_ADMIN_IP}}"
+							],
+							"port": "8001",
+							"path": [
+								"routes",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Productos",
+			"item": [
+				{
+					"name": "Create Producto",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"SKU\": \"EPP-001\",\r\n    \"descripcion\": \"Guantes de nitrilo\",\r\n    \"referencia\": \"GN-2024\",\r\n    \"peso\": 0.15,\r\n    \"categoria\": \"PROTECCIÓN MANUAL\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{PEDIDOS_MS_IP}}:8080/productos/",
+							"protocol": "http",
+							"host": [
+								"{{PEDIDOS_MS_IP}}"
+							],
+							"port": "8080",
+							"path": [
+								"productos",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Productos",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{PEDIDOS_MS_IP}}:8080/productos/",
+							"protocol": "http",
+							"host": [
+								"{{PEDIDOS_MS_IP}}"
+							],
+							"port": "8080",
+							"path": [
+								"productos",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Producto by ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{PEDIDOS_MS_IP}}:8080/productos/{{PRODUCTO_ID}}",
+							"protocol": "http",
+							"host": [
+								"{{PEDIDOS_MS_IP}}"
+							],
+							"port": "8080",
+							"path": [
+								"productos",
+								"{{PRODUCTO_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Producto",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"SKU\": \"EPP-001\",\r\n    \"descripcion\": \"Guantes de nitrilo premium\",\r\n    \"referencia\": \"GN-2024\",\r\n    \"peso\": 0.18,\r\n    \"categoria\": \"PROTECCIÓN MANUAL\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{PEDIDOS_MS_IP}}:8080/productos/{{PRODUCTO_ID}}",
+							"protocol": "http",
+							"host": [
+								"{{PEDIDOS_MS_IP}}"
+							],
+							"port": "8080",
+							"path": [
+								"productos",
+								"{{PRODUCTO_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Producto",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://{{PEDIDOS_MS_IP}}:8080/productos/{{PRODUCTO_ID}}",
+							"protocol": "http",
+							"host": [
+								"{{PEDIDOS_MS_IP}}"
+							],
+							"port": "8080",
+							"path": [
+								"productos",
+								"{{PRODUCTO_ID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Pedidos",
+			"item": [
+				{
+					"name": "Create Pedido",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"code\": \"PED-2024-001\",\r\n    \"estadoActual\": \"COTIZACIÓN\",\r\n    \"tipoPedido\": \"DIFERIDO\",\r\n    \"bodega\": \"Bodega Central\",\r\n    \"productos\": [],\r\n    \"valorTotal\": 150000.0,\r\n    \"observaciones\": \"Pedido urgente\",\r\n    \"fechaEntrega\": \"2024-12-15T10:00:00\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{PEDIDOS_MS_IP}}:8080/pedidos/",
+							"protocol": "http",
+							"host": [
+								"{{PEDIDOS_MS_IP}}"
+							],
+							"port": "8080",
+							"path": [
+								"pedidos",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pedidos",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{PEDIDOS_MS_IP}}:8080/pedidos/",
+							"protocol": "http",
+							"host": [
+								"{{PEDIDOS_MS_IP}}"
+							],
+							"port": "8080",
+							"path": [
+								"pedidos",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pedido by ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{PEDIDOS_MS_IP}}:8080/pedidos/{{PEDIDO_ID}}",
+							"protocol": "http",
+							"host": [
+								"{{PEDIDOS_MS_IP}}"
+							],
+							"port": "8080",
+							"path": [
+								"pedidos",
+								"{{PEDIDO_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Pedido by Code",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{PEDIDOS_MS_IP}}:8080/pedidos/code/{{PEDIDO_CODE}}",
+							"protocol": "http",
+							"host": [
+								"{{PEDIDOS_MS_IP}}"
+							],
+							"port": "8080",
+							"path": [
+								"pedidos",
+								"code",
+								"{{PEDIDO_CODE}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Pedido",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"code\": \"PED-2024-001\",\r\n    \"estadoActual\": \"VERIFICADO\",\r\n    \"tipoPedido\": \"DIFERIDO\",\r\n    \"bodega\": \"Bodega Central\",\r\n    \"productos\": [\"{{PRODUCTO_ID}}\"],\r\n    \"valorTotal\": 180000.0,\r\n    \"observaciones\": \"Pedido urgente - Verificado\",\r\n    \"fechaEntrega\": \"2024-12-15T10:00:00\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{PEDIDOS_MS_IP}}:8080/pedidos/{{PEDIDO_ID}}",
+							"protocol": "http",
+							"host": [
+								"{{PEDIDOS_MS_IP}}"
+							],
+							"port": "8080",
+							"path": [
+								"pedidos",
+								"{{PEDIDO_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Pedido",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://{{PEDIDOS_MS_IP}}:8080/pedidos/{{PEDIDO_ID}}",
+							"protocol": "http",
+							"host": [
+								"{{PEDIDOS_MS_IP}}"
+							],
+							"port": "8080",
+							"path": [
+								"pedidos",
+								"{{PEDIDO_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Estado Pedido",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"estadoActual\": \"DESPACHADO\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{PEDIDOS_MS_IP}}:8080/pedidos/{{PEDIDO_ID}}/estado",
+							"protocol": "http",
+							"host": [
+								"{{PEDIDOS_MS_IP}}"
+							],
+							"port": "8080",
+							"path": [
+								"pedidos",
+								"{{PEDIDO_ID}}",
+								"estado"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Producto to Pedido",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"producto_id\": \"{{PRODUCTO_ID}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{PEDIDOS_MS_IP}}:8080/pedidos/{{PEDIDO_ID}}/productos",
+							"protocol": "http",
+							"host": [
+								"{{PEDIDOS_MS_IP}}"
+							],
+							"port": "8080",
+							"path": [
+								"pedidos",
+								"{{PEDIDO_ID}}",
+								"productos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Many Pedidos",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\r\n    {\r\n        \"code\": \"PED-2024-002\",\r\n        \"estadoActual\": \"COTIZACIÓN\",\r\n        \"tipoPedido\": \"INMEDIATO\",\r\n        \"bodega\": \"Bodega Norte\",\r\n        \"productos\": [],\r\n        \"valorTotal\": 200000.0,\r\n        \"observaciones\": \"Cliente VIP\",\r\n        \"fechaEntrega\": \"2024-12-10T15:00:00\"\r\n    },\r\n    {\r\n        \"code\": \"PED-2024-003\",\r\n        \"estadoActual\": \"ALISTAMIENTO\",\r\n        \"tipoPedido\": \"DIFERIDO\",\r\n        \"bodega\": \"Bodega Sur\",\r\n        \"productos\": [],\r\n        \"valorTotal\": 350000.0,\r\n        \"observaciones\": \"Revisar inventario\",\r\n        \"fechaEntrega\": \"2024-12-20T09:00:00\"\r\n    }\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{PEDIDOS_MS_IP}}:8080/pedidos/bulk",
+							"protocol": "http",
+							"host": [
+								"{{PEDIDOS_MS_IP}}"
+							],
+							"port": "8080",
+							"path": [
+								"pedidos",
+								"bulk"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
