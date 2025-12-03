@@ -12,7 +12,7 @@ from models.models import Pedido, PedidoCollection
 from models.db import pedidos_collection
 from pymongo.errors import DuplicateKeyError
 from fastapi import HTTPException
-import requests
+import request
 import json
 
 async def get_pedidos():
@@ -40,24 +40,24 @@ async def get_pedido(pedido_code: str):
 
 
 
-def check_product(product_id):
-    PATH_PRODUCT = f"http://3.236.215.110:8000/productos/{product_id}"
+async def check_product(product_id):
+        PATH_PRODUCT = f"http://3.236.215.110:8000/productos/{product_id}"
 
-    try:
-        r = requests.get(PATH_PRODUCT, headers={"Accept": "application/json"})
-        if r.status_code != 200:
+        try:
+            r = requests.get(PATH_PRODUCT, headers={"Accept": "application/json"})
+            if r.status_code != 200:
+                return False
+
+            data = r.json()
+            product_list = data.get("data", [])
+
+            if len(product_list) == 0:
+                return False
+
+            return True
+
+        except Exception:
             return False
-
-        data = r.json()
-        product_list = data.get("data", [])
-
-        if len(product_list) == 0:
-            return False
-
-        return True
-
-    except Exception:
-        return False
 
 
 async def create_pedido(pedido: Pedido):

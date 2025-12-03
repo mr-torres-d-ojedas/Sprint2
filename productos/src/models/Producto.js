@@ -48,6 +48,11 @@ const ProductoSchema = new mongoose.Schema(
       type: String,
       enum: CategoriasProducto,
       default: 'OTROS'
+    },
+    precio: {
+      type: Number,
+      default: 0.0,
+      min: 0
     }
   },
   {
