@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
 
 // Enumeración de categorías
 const CategoriasProducto = [
@@ -19,58 +20,124 @@ const CategoriasProducto = [
   'TECNOLOGÍA'
 ];
 
-const ProductoSchema = new mongoose.Schema(
-  {
-    SKU: {
-      type: String,
-      required: false,
-      trim: true,
-      index: true
-    },
-    descripcion: {
-      type: String,
-      required: false,
-      trim: true,
-      maxlength: 250
-    },
-    referencia: {
-      type: String,
-      required: false,
-      trim: true,
-      maxlength: 150
-    },
-    peso: {
-      type: Number,
-      default: 0.0,
-      min: 0
-    },
-    categoria: {
-      type: String,
-      enum: CategoriasProducto,
-      default: 'OTROS'
-    },
-    precio: {
-      type: Number,
-      default: 0.0,
-      min: 0
+const Producto = sequelize.define('Producto', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+    allowNull: false
+  },
+  SKU: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    validate: {
+      len: {
+        args: [0, 100],
+        msg: 'SKU debe tener máximo 100 caracteres'
+      },
+      // Validación para evitar caracteres maliciosos
+      is: {
+        args: /^[a-zA-Z0-9\-_]*$/,
+        msg: 'SKU solo puede contener letras, números, guiones y guiones bajos'
+      }
     }
   },
-  {
-    timestamps: true, // Agrega createdAt y updatedAt automáticamente
-    versionKey: false
+  descripcion: {
+    type: DataTypes.STRING(250),
+    allowNull: true,
+    validate: {
+      len: {
+        args: [0, 250],
+        msg: 'Descripción debe tener máximo 250 caracteres'
+      }
+    }
+  },
+  referencia: {
+    type: DataTypes.STRING(150),
+    allowNull: true,
+    validate: {
+      len: {
+        args: [0, 150],
+        msg: 'Referencia debe tener máximo 150 caracteres'
+      }
+    }
+  },
+  peso: {
+    type: DataTypes.FLOAT,
+    defaultValue: 0.0,
+    allowNull: false,
+    validate: {
+      min: {
+        args: 0,
+        msg: 'El peso no puede ser negativo'
+      },
+      isFloat: {
+        msg: 'El peso debe ser un número decimal'
+      }
+    }
+  },
+  precio: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0.00,
+    allowNull: false,
+    validate: {
+      min: {
+        args: 0,
+        msg: 'El precio no puede ser negativo'
+      },
+      isDecimal: {
+        msg: 'El precio debe ser un número decimal'
+      }
+    }
+  },
+  categoria: {
+    type: DataTypes.ENUM(...CategoriasProducto),
+    defaultValue: 'OTROS',
+    allowNull: false,
+    validate: {
+      isIn: {
+        args: [CategoriasProducto],
+        msg: 'Categoría no válida'
+      }
+    }
   }
-);
-
-// Índice para búsquedas por SKU
-ProductoSchema.index({ SKU: 1 });
-
-// Método para transformar el objeto al devolverlo
-ProductoSchema.set('toJSON', {
-  transform: (doc, ret) => {
-    ret.id = ret._id;
-    delete ret._id;
-    return ret;
-  }
+}, {
+  tableName: 'productos',
+  timestamps: true,
+  
+  // Hooks para sanitización adicional
+  hooks: {
+    beforeValidate: (producto, options) => {
+      // Sanitizar strings: trim y remover caracteres peligrosos
+      if (producto.SKU) {
+        producto.SKU = producto.SKU.trim();
+      }
+      if (producto.descripcion) {
+        producto.descripcion = producto.descripcion.trim();
+      }
+      if (producto.referencia) {
+        producto.referencia = producto.referencia.trim();
+      }
+    }
+  },
+  
+  // Configuración de índices para mejorar rendimiento
+  indexes: [
+    {
+      unique: false,
+      fields: ['SKU']
+    },
+    {
+      unique: false,
+      fields: ['categoria']
+    }
+  ]
 });
 
-module.exports = mongoose.model('Producto', ProductoSchema);
+// Método para transformar a JSON
+Producto.prototype.toJSON = function() {
+  const values = Object.assign({}, this.get());
+  return values;
+};
+
+module.exports = Producto;
