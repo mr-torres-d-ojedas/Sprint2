@@ -1,3 +1,13 @@
+# Para ejecución:
+1. Cambiar las direcciones de pedidos y productos en el kong
+2. Para el despliegue de pedidos primero "sudo rm -rf /labs/Sprint2/venv" luego en /pedidos "python3 -m venv venv", seguido de "source venv/bin/activate", para finalizar con "python -m pip install --upgrade pip
+python -m pip install -r pedidos/requirements.txt".
+3. Una vez esto se procede a ejecutar pedidos con python3 main.py
+4. Cambiar en el lógic de pedidos la url por la url del kong (cambiar solo la ip)
+5. Para ejecutar pedidos en su microservicio, se debe hacer un npm install y seguido de ello un npm run dev (saldrá error pero ya estará corriendo).
+   
+
+
 # Sprint 2 – Provesi (Django)
 
 Aplicación web en Django para gestionar productos y pedidos (crear, listar y despachar), con un pequeño reporte de los productos más vendidos en los últimos 90 días y un endpoint de health-check.
