@@ -1,19 +1,46 @@
 const Producto = require('../models/Producto');
+const { Op } = require('sequelize');
+const { validationResult } = require('express-validator');
+
+// Función auxiliar para sanitizar búsquedas
+const sanitizeSearchTerm = (term) => {
+  if (!term) return term;
+  // Remover caracteres peligrosos para SQL
+  return term.replace(/['";\\]/g, '').trim();
+};
 
 // @desc    Crear un nuevo producto
 // @route   POST /productos
 // @access  Public
 const crearProducto = async (req, res) => {
   try {
-    const producto = new Producto(req.body);
-    const productoGuardado = await producto.save();
+    // Validar errores de express-validator
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const producto = await Producto.create(req.body);
     
     res.status(201).json({
       success: true,
-      data: productoGuardado
+      data: producto
     });
   } catch (error) {
     console.error('Error al crear producto:', error);
+    
+    // Error de validación de Sequelize
+    if (error.name === 'SequelizeValidationError') {
+      return res.status(400).json({
+        success: false,
+        error: 'Datos de producto inválidos',
+        details: error.errors.map(e => e.message)
+      });
+    }
+    
     res.status(400).json({
       success: false,
       error: error.message
@@ -26,7 +53,9 @@ const crearProducto = async (req, res) => {
 // @access  Public
 const obtenerProductos = async (req, res) => {
   try {
-    const productos = await Producto.find();
+    const productos = await Producto.findAll({
+      order: [['createdAt', 'DESC']]
+    });
     
     res.status(200).json({
       success: true,
@@ -47,7 +76,7 @@ const obtenerProductos = async (req, res) => {
 // @access  Public
 const obtenerProductoPorId = async (req, res) => {
   try {
-    const producto = await Producto.findById(req.params.id);
+    const producto = await Producto.findByPk(req.params.id);
     
     if (!producto) {
       return res.status(404).json({
@@ -74,7 +103,11 @@ const obtenerProductoPorId = async (req, res) => {
 // @access  Public
 const obtenerProductoPorSKU = async (req, res) => {
   try {
-    const producto = await Producto.findOne({ SKU: req.params.sku });
+    const skuSanitizado = sanitizeSearchTerm(req.params.sku);
+    
+    const producto = await Producto.findOne({
+      where: { SKU: skuSanitizado }
+    });
     
     if (!producto) {
       return res.status(404).json({
@@ -101,14 +134,16 @@ const obtenerProductoPorSKU = async (req, res) => {
 // @access  Public
 const actualizarProducto = async (req, res) => {
   try {
-    const producto = await Producto.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true, // Devuelve el documento actualizado
-        runValidators: true // Ejecuta las validaciones del schema
-      }
-    );
+    // Validar errores de express-validator
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const producto = await Producto.findByPk(req.params.id);
     
     if (!producto) {
       return res.status(404).json({
@@ -117,12 +152,23 @@ const actualizarProducto = async (req, res) => {
       });
     }
     
+    await producto.update(req.body);
+    
     res.status(200).json({
       success: true,
       data: producto
     });
   } catch (error) {
     console.error('Error al actualizar producto:', error);
+    
+    if (error.name === 'SequelizeValidationError') {
+      return res.status(400).json({
+        success: false,
+        error: 'Datos de producto inválidos',
+        details: error.errors.map(e => e.message)
+      });
+    }
+    
     res.status(400).json({
       success: false,
       error: error.message
@@ -135,7 +181,7 @@ const actualizarProducto = async (req, res) => {
 // @access  Public
 const eliminarProducto = async (req, res) => {
   try {
-    const producto = await Producto.findByIdAndDelete(req.params.id);
+    const producto = await Producto.findByPk(req.params.id);
     
     if (!producto) {
       return res.status(404).json({
@@ -143,6 +189,8 @@ const eliminarProducto = async (req, res) => {
         error: 'Producto no encontrado'
       });
     }
+    
+    await producto.destroy();
     
     res.status(200).json({
       success: true,
@@ -170,7 +218,9 @@ const crearProductosBulk = async (req, res) => {
       });
     }
     
-    const productos = await Producto.insertMany(req.body);
+    const productos = await Producto.bulkCreate(req.body, {
+      validate: true
+    });
     
     res.status(201).json({
       success: true,
@@ -179,6 +229,15 @@ const crearProductosBulk = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al crear productos en bulk:', error);
+    
+    if (error.name === 'SequelizeValidationError') {
+      return res.status(400).json({
+        success: false,
+        error: 'Datos de productos inválidos',
+        details: error.errors.map(e => e.message)
+      });
+    }
+    
     res.status(400).json({
       success: false,
       error: error.message
@@ -191,8 +250,11 @@ const crearProductosBulk = async (req, res) => {
 // @access  Public
 const obtenerProductosPorCategoria = async (req, res) => {
   try {
-    const productos = await Producto.find({ 
-      categoria: req.params.categoria 
+    const categoriaSanitizada = sanitizeSearchTerm(req.params.categoria);
+    
+    const productos = await Producto.findAll({
+      where: { categoria: categoriaSanitizada },
+      order: [['createdAt', 'DESC']]
     });
     
     res.status(200).json({

@@ -111,38 +111,39 @@ resource "aws_security_group" "traffic_ssh_productos" {
   })
 }
 
-# Recurso. Define el grupo de seguridad para el tráfico de MongoDB.
-resource "aws_security_group" "traffic_mongodb_productos" {
-    name        = "${var.project_prefix}-traffic-mongodb-productos"
-    description = "Allow application traffic on port 27017"
+# Recurso. Define el grupo de seguridad para el tráfico de PostgreSQL.
+resource "aws_security_group" "traffic_postgres_productos" {
+    name        = "${var.project_prefix}-traffic-postgres-productos"
+    description = "Allow application traffic on port 5432"
 
     ingress {
-        description = "MongoDB access for database layer"
-        from_port   = 27017
-        to_port     = 27017
+        description = "PostgreSQL access for database layer"
+        from_port   = 5432
+        to_port     = 5432
         protocol    = "tcp"
         cidr_blocks = ["0.0.0.0/0"]
     }
 
     tags = merge(local.common_tags, {
-        Name = "${var.project_prefix}-traffic-mongodb-productos"
+        Name = "${var.project_prefix}-traffic-postgres-productos"
     })
 }
 
-# Recurso. Define la instancia EC2 para la base de datos de Productos (MongoDB).
+# Recurso. Define la instancia EC2 para la base de datos de Productos (PostgreSQL).
 resource "aws_instance" "productos_db" {
   ami                         = "ami-051685736c7b35f95"
   instance_type               = var.instance_type
   associate_public_ip_address = true
-  vpc_security_group_ids      = [aws_security_group.traffic_mongodb_productos.id, aws_security_group.traffic_ssh_productos.id]
+  vpc_security_group_ids      = [aws_security_group.traffic_postgres_productos.id, aws_security_group.traffic_ssh_productos.id]
 
   user_data = <<-EOT
               #!/bin/bash
 
-              docker run -d --name productos-db -p 27017:27017 \
-                            -e MONGO_INITDB_ROOT_USERNAME=monitoring_user \
-                            -e MONGO_INITDB_ROOT_PASSWORD=isis2503 \
-                            mongodb/mongodb-community-server
+              docker run --restart=always -d --name productos-db -p 5432:5432 \
+                            -e POSTGRES_USER=productos_user \
+                            -e POSTGRES_PASSWORD=isis2503_secure \
+                            -e POSTGRES_DB=productos_db \
+                            postgres:15-alpine
               EOT
 
   tags = merge(local.common_tags, {
@@ -191,7 +192,11 @@ resource "aws_instance" "productos_ms" {
               # Crear archivo .env con la IP de la base de datos
               cat > .env << EOF
               PORT=8080
-              MONGODB_URI=mongodb://monitoring_user:isis2503@${aws_instance.productos_db.private_ip}:27017/productos_db?authSource=admin
+              DB_HOST=${aws_instance.productos_db.private_ip}
+              DB_PORT=5432
+              DB_NAME=productos_db
+              DB_USER=productos_user
+              DB_PASSWORD=isis2503_secure
               NODE_ENV=production
               EOF
 

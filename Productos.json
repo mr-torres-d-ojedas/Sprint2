@@ -1,0 +1,244 @@
+[
+  {
+    "SKU": "SKU-1001",
+    "descripcion": "GUANTES DE NITRILO ANTICORTE",
+    "referencia": "GNT-AC01",
+    "peso": 0.30,
+    "categoria": "PROTECCIÓN MANUAL",
+    "precio": 18500
+  },
+  {
+    "SKU": "SKU-1002",
+    "descripcion": "GAFAS INDUSTRIALES DE POLICARBONATO",
+    "referencia": "GNT-AC02",
+    "peso": 0.25,
+    "categoria": "PROTECCIÓN VISUAL",
+    "precio": 14500
+  },
+  {
+    "SKU": "SKU-1003",
+    "descripcion": "TAPONES AUDITIVOS DE ESPUMA",
+    "referencia": "GNT-AC03",
+    "peso": 0.05,
+    "categoria": "PROTECCIÓN AUDITIVA",
+    "precio": 6500
+  },
+  {
+    "SKU": "SKU-1004",
+    "descripcion": "RESPIRADOR DE DOBLE FILTRO",
+    "referencia": "GNT-AC04",
+    "peso": 0.40,
+    "categoria": "PROTECCIÓN RESPIRATORIA",
+    "precio": 48000
+  },
+  {
+    "SKU": "SKU-1005",
+    "descripcion": "CASCO DE SEGURIDAD CON AJUSTE RÁPIDO",
+    "referencia": "GNT-AC05",
+    "peso": 0.55,
+    "categoria": "PROTECCIÓN FACIAL Y CABEZA",
+    "precio": 32000
+  },
+  {
+    "SKU": "SKU-1006",
+    "descripcion": "ARNÉS DE SEGURIDAD DE CUERPOS COMPLETO",
+    "referencia": "GNT-AC06",
+    "peso": 1.20,
+    "categoria": "PROTECCIÓN ALTURAS",
+    "precio": 158000
+  },
+  {
+    "SKU": "SKU-1007",
+    "descripcion": "BOTAS INDUSTRIALES PUNTA DE ACERO",
+    "referencia": "GNT-AC07",
+    "peso": 1.50,
+    "categoria": "PROTECCIÓN PIES",
+    "precio": 98000
+  },
+  {
+    "SKU": "SKU-1008",
+    "descripcion": "CHALECO REFLECTIVO ALTA VISIBILIDAD",
+    "referencia": "GNT-AC08",
+    "peso": 0.30,
+    "categoria": "PROTECCIÓN CORPORAL",
+    "precio": 22000
+  },
+  {
+    "SKU": "SKU-1009",
+    "descripcion": "SEÑAL PISO MOJADO PLEGABLE",
+    "referencia": "GNT-AC09",
+    "peso": 0.90,
+    "categoria": "SEÑALIZACIÓN",
+    "precio": 38000
+  },
+  {
+    "SKU": "SKU-1010",
+    "descripcion": "BOTIQUÍN DE PRIMEROS AUXILIOS EMPRESARIAL",
+    "referencia": "GNT-AC10",
+    "peso": 0.75,
+    "categoria": "ATENCIÓN PRIMEROS AUXILIOS",
+    "precio": 56000
+  },
+
+  {
+    "SKU": "SKU-1011",
+    "descripcion": "KIT DE RESCATE PARA ESPACIOS CONFINADOS",
+    "referencia": "GNT-AC11",
+    "peso": 2.40,
+    "categoria": "PROTECCIÓN ESPACIOS CONFINADOS",
+    "precio": 210000
+  },
+  {
+    "SKU": "SKU-1012",
+    "descripcion": "KIT ABSORBENTE PARA DERRAMES INDUSTRIALES",
+    "referencia": "GNT-AC12",
+    "peso": 1.80,
+    "categoria": "MATERIAL ATENCIÓN DERRAMES",
+    "precio": 95000
+  },
+  {
+    "SKU": "SKU-1013",
+    "descripcion": "MARTILLO DE EMERGENCIA CON CORTACINTURÓN",
+    "referencia": "GNT-AC13",
+    "peso": 0.40,
+    "categoria": "HERRAMIENTAS Y EQUIPOS",
+    "precio": 28000
+  },
+  {
+    "SKU": "SKU-1014",
+    "descripcion": "KIT BÁSICO DE HERRAMIENTAS MULTIUSO",
+    "referencia": "GNT-AC14",
+    "peso": 1.00,
+    "categoria": "HERRAMIENTAS Y EQUIPOS",
+    "precio": 74000
+  },
+  {
+    "SKU": "SKU-1015",
+    "descripcion": "CINTURÓN PORTAHERRAMIENTAS DE CUERO",
+    "referencia": "GNT-AC15",
+    "peso": 0.60,
+    "categoria": "HERRAMIENTAS Y EQUIPOS",
+    "precio": 42000
+  },
+  {
+    "SKU": "SKU-1016",
+    "descripcion": "PROTECTOR FACIAL CON VISOR CLARO",
+    "referencia": "GNT-AC16",
+    "peso": 0.45,
+    "categoria": "PROTECCIÓN FACIAL Y CABEZA",
+    "precio": 31000
+  },
+  {
+    "SKU": "SKU-1017",
+    "descripcion": "GUANTES TÉRMICOS PARA ALTAS TEMPERATURAS",
+    "referencia": "GNT-AC17",
+    "peso": 0.35,
+    "categoria": "PROTECCIÓN MANUAL",
+    "precio": 37000
+  },
+  {
+    "SKU": "SKU-1018",
+    "descripcion": "GAFAS ANTIEMPAÑANTES PREMIUM",
+    "referencia": "GNT-AC18",
+    "peso": 0.22,
+    "categoria": "PROTECCIÓN VISUAL",
+    "precio": 26000
+  },
+  {
+    "SKU": "SKU-1019",
+    "descripcion": "PROTECTOR AUDITIVO TIPO COPA",
+    "referencia": "GNT-AC19",
+    "peso": 0.50,
+    "categoria": "PROTECCIÓN AUDITIVA",
+    "precio": 33000
+  },
+  {
+    "SKU": "SKU-1020",
+    "descripcion": "OVEROL DE PROTECCIÓN INDUSTRIAL",
+    "referencia": "GNT-AC20",
+    "peso": 1.10,
+    "categoria": "PROTECCIÓN CORPORAL",
+    "precio": 67000
+  },
+
+  {
+    "SKU": "SKU-1021",
+    "descripcion": "LINTERNA TÁCTICA INDUSTRIAL LED",
+    "referencia": "GNT-AC21",
+    "peso": 0.40,
+    "categoria": "OTROS",
+    "precio": 45000
+  },
+  {
+    "SKU": "SKU-1022",
+    "descripcion": "CASCO CON VISOR INTEGRADO",
+    "referencia": "GNT-AC22",
+    "peso": 0.75,
+    "categoria": "PROTECCIÓN FACIAL Y CABEZA",
+    "precio": 62000
+  },
+  {
+    "SKU": "SKU-1023",
+    "descripcion": "ZAPATOS DE SEGURIDAD ANTIRESBALANTE",
+    "referencia": "GNT-AC23",
+    "peso": 1.30,
+    "categoria": "PROTECCIÓN PIES",
+    "precio": 89000
+  },
+  {
+    "SKU": "SKU-1024",
+    "descripcion": "MOCHILA DE EMERGENCIA MULTIPROPÓSITO",
+    "referencia": "GNT-AC24",
+    "peso": 1.20,
+    "categoria": "ATENCIÓN PRIMEROS AUXILIOS",
+    "precio": 78000
+  },
+  {
+    "SKU": "SKU-1025",
+    "descripcion": "SEÑAL FOTOLUMINISCENTE DE SALIDA",
+    "referencia": "GNT-AC25",
+    "peso": 0.30,
+    "categoria": "SEÑALIZACIÓN",
+    "precio": 24000
+  },
+  {
+    "SKU": "SKU-1026",
+    "descripcion": "EQUIPO DE MEDICIÓN DE GASES PORTÁTIL",
+    "referencia": "GNT-AC26",
+    "peso": 0.85,
+    "categoria": "TECNOLOGÍA",
+    "precio": 195000
+  },
+  {
+    "SKU": "SKU-1027",
+    "descripcion": "FILTRo PARA RESPIRADOR DE PARTÍCULAS",
+    "referencia": "GNT-AC27",
+    "peso": 0.20,
+    "categoria": "PROTECCIÓN RESPIRATORIA",
+    "precio": 38000
+  },
+  {
+    "SKU": "SKU-1028",
+    "descripcion": "ARNÉS TIPO CRUZ REFUERZO PROFESIONAL",
+    "referencia": "GNT-AC28",
+    "peso": 1.80,
+    "categoria": "PROTECCIÓN ALTURAS",
+    "precio": 172000
+  },
+  {
+    "SKU": "SKU-1029",
+    "descripcion": "KIT CONTRA DERRAMES QUÍMICOS",
+    "referencia": "GNT-AC29",
+    "peso": 2.10,
+    "categoria": "MATERIAL ATENCIÓN DERRAMES",
+    "precio": 145000
+  },
+  {
+    "SKU": "SKU-1030",
+    "descripcion": "GUANTES ANTIDESLIZANTES USO MÚLTIPLE",
+    "referencia": "GNT-AC30",
+    "peso": 0.28,
+    "categoria": "PROTECCIÓN MANUAL",
+    "precio": 11500
+  }
+]
