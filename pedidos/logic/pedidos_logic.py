@@ -12,7 +12,7 @@ from models.models import Pedido, PedidoCollection
 from models.db import pedidos_collection
 from pymongo.errors import DuplicateKeyError
 from fastapi import HTTPException
-import request
+import requests
 import json
 
 async def get_pedidos():
@@ -59,6 +59,22 @@ async def check_product(product_id):
         except Exception:
             return False
 
+async def get_price_product(product_id):
+        PATH_PRODUCT = f"http://3.236.215.110:8000/productos/{product_id}"
+
+        try:
+            r = requests.get(PATH_PRODUCT, headers={"Accept": "application/json"})
+            if r.status_code != 200:
+                return False
+
+            data = r.json()
+            product_list = data.get("data", [])
+
+            return product_list.precio
+
+        except Exception:
+            return 0
+    
 
 async def create_pedido(pedido: Pedido):
     """
@@ -87,7 +103,10 @@ async def create_pedido(pedido: Pedido):
                     status_code=404,
                     detail=f"Producto {product_id} not found",
                 )
-
+            else:
+                valor = await get_price_product(product_id)       
+                pedido.valorTotal +=  valor
+                    
         # 3) Buscar y retornar el pedido ya creado
         created_pedido = await pedidos_collection.find_one({"_id": pedido_id})
         return created_pedido
