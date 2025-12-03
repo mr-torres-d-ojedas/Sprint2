@@ -40,81 +40,109 @@ async def get_pedido(pedido_code: str):
 
 
 
-async def check_product(product_id):
-        PATH_PRODUCT = f"http://3.236.215.110:8000/productos/{product_id}"
-
-        try:
-            r = requests.get(PATH_PRODUCT, headers={"Accept": "application/json"})
-            if r.status_code != 200:
-                return False
-
-            data = r.json()
-            product_list = data.get("data", [])
-
-            if len(product_list) == 0:
-                return False
-
-            return True
-
-        except Exception:
-            return False
 
 async def get_price_product(product_id):
-        PATH_PRODUCT = f"http://3.236.215.110:8000/productos/{product_id}"
+    """
+    Obtiene el precio de un producto desde el microservicio de productos
+    """
+    PATH_PRODUCT = f"http://3.231.224.209:8000/productos/{product_id}"
 
-        try:
-            r = requests.get(PATH_PRODUCT, headers={"Accept": "application/json"})
-            if r.status_code != 200:
-                return False
+    try:
+        r = requests.get(PATH_PRODUCT, headers={"Accept": "application/json"}, timeout=5)
+        
+        if r.status_code != 200:
+            return None
 
-            data = r.json()
-            product_list = data.get("data", [])
+        data = r.json()
+        product_data = data.get("data")
 
-            return product_list.precio
+        if not product_data:
+            return None
 
-        except Exception:
-            return 0
-    
+        # Retorna el precio o 0 si no existe
+        return product_data.get("precio", 0)
+
+    except Exception as e:
+        print(f"Error al obtener precio del producto {product_id}: {e}")
+        return None
+
+
+async def check_product(product_id):
+    """
+    Verifica que un producto exista en el microservicio
+    """
+    PATH_PRODUCT = f"http://3.231.224.209:8000/productos/{product_id}"
+
+    try:
+        r = requests.get(PATH_PRODUCT, headers={"Accept": "application/json"}, timeout=5)
+        return r.status_code == 200
+    except Exception as e:
+        print(f"Error al verificar producto {product_id}: {e}")
+        return False
+
 
 async def create_pedido(pedido: Pedido):
     """
-    Insert a new pedido record with validation of product IDs.
+    Insert a new pedido record with validation of product IDs and price calculation.
     """
 
-    # 1) Crear el pedido SIN productos (solo datos principales)
     try:
+        # 1) Validar productos y calcular valorTotal ANTES de insertar
+        valor_total = 0.0
+        productos_validados = []
+
+        for product_id in pedido.productos:
+            # Verificar que el producto existe
+            exists = await check_product(product_id)
+
+            if not exists:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Producto {product_id} not found in product service",
+                )
+
+            # Obtener precio del producto
+            precio = await get_price_product(product_id)
+
+            if precio is None:
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Error al obtener precio del producto {product_id}",
+                )
+
+            # Sumar al total
+            valor_total += precio
+            productos_validados.append(product_id)
+
+        # 2) Actualizar el valorTotal en el objeto pedido ANTES de insertarlo
+        pedido.valorTotal = valor_total
+        pedido.productos = productos_validados
+
+        # 3) Insertar el pedido con el valorTotal ya calculado
         new_pedido = await pedidos_collection.insert_one(
             pedido.model_dump(by_alias=True, exclude=["id"])
         )
 
         pedido_id = new_pedido.inserted_id
 
-        # 2) Validar los productos
-        for product_id in pedido.productos:
-
-            # check_product debe ser async
-            exists = await check_product(product_id)
-
-            if exists is not True:
-                # rollback → borrar el pedido que se creó
-                await pedidos_collection.delete_one({"_id": pedido_id})
-
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"Producto {product_id} not found",
-                )
-            else:
-                valor = await get_price_product(product_id)       
-                pedido.valorTotal +=  valor
-                    
-        # 3) Buscar y retornar el pedido ya creado
+        # 4) Recuperar el pedido creado y devolverlo
         created_pedido = await pedidos_collection.find_one({"_id": pedido_id})
+        
         return created_pedido
 
     except DuplicateKeyError:
         raise HTTPException(
             status_code=409,
             detail=f"Pedido with code {pedido.code} already exists"
+        )
+    except HTTPException:
+        # Re-lanzar excepciones HTTP ya manejadas
+        raise
+    except Exception as e:
+        print(f"Error inesperado al crear pedido: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno al crear pedido: {str(e)}"
         )
 
 
