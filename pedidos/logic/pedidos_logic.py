@@ -12,7 +12,8 @@ from models.models import Pedido, PedidoCollection
 from models.db import pedidos_collection
 from pymongo.errors import DuplicateKeyError
 from fastapi import HTTPException
-
+import requests
+import json
 
 async def get_pedidos():
     """
@@ -37,22 +38,66 @@ async def get_pedido(pedido_code: str):
     )
 
 
+
+
+def check_product(product_id):
+    PATH_PRODUCT = f"http://3.236.215.110:8000/productos/{product_id}"
+
+    try:
+        r = requests.get(PATH_PRODUCT, headers={"Accept": "application/json"})
+        if r.status_code != 200:
+            return False
+
+        data = r.json()
+        product_list = data.get("data", [])
+
+        if len(product_list) == 0:
+            return False
+
+        return True
+
+    except Exception:
+        return False
+
+
 async def create_pedido(pedido: Pedido):
     """
-    Insert a new pedido record.
+    Insert a new pedido record with validation of product IDs.
     """
 
+    # 1) Crear el pedido SIN productos (solo datos principales)
     try:
         new_pedido = await pedidos_collection.insert_one(
             pedido.model_dump(by_alias=True, exclude=["id"])
         )
-        created_pedido = await pedidos_collection.find_one({"_id": new_pedido.inserted_id})
+
+        pedido_id = new_pedido.inserted_id
+
+        # 2) Validar los productos
+        for product_id in pedido.productos:
+
+            # check_product debe ser async
+            exists = await check_product(product_id)
+
+            if exists is not True:
+                # rollback → borrar el pedido que se creó
+                await pedidos_collection.delete_one({"_id": pedido_id})
+
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Producto {product_id} not found",
+                )
+
+        # 3) Buscar y retornar el pedido ya creado
+        created_pedido = await pedidos_collection.find_one({"_id": pedido_id})
         return created_pedido
 
     except DuplicateKeyError:
         raise HTTPException(
-            status_code=409, detail=f"Pedido with code {pedido.code} already exists"
+            status_code=409,
+            detail=f"Pedido with code {pedido.code} already exists"
         )
+
 
 
 async def update_pedido(pedido_code: str, pedido: Pedido):
